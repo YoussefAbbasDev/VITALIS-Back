@@ -136,7 +136,7 @@ sharing a deployment publicly.
 ```
 app.js                  Vercel entry (default-exports the Express app)
 src/server.js           Local entry: HTTP listener + Socket.IO
-src/app.js              Express app factory (middleware, routes)
+src/create-app.js       Express app factory (middleware, routes)
 src/config/env.js       Zod-validated environment
 src/db/pool.js          MySQL pool (SSL, pool caps, UTC sessions)
 src/routes/             auth, admin, astronauts, alerts, checkins, crew,

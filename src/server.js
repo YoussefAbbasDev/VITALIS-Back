@@ -1,5 +1,5 @@
 import http from 'node:http';
-import { createApp } from './app.js';
+import { createApp } from './create-app.js';
 import { env } from './config/env.js';
 import { pingDatabase } from './db/pool.js';
 import { initSockets } from './sockets/index.js';

@@ -23,3 +23,6 @@ coverage/
 # Keep temporary exports out of the repo.
 database/*.tmp
 database/*.bak
+
+.vercel
+.env*
