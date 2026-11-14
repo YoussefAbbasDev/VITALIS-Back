@@ -129,6 +129,18 @@ sharing a deployment publicly.
 
 ## 4. Deploying to Vercel
 
+### Current deployment
+
+| Piece | Where |
+| ----- | ----- |
+| API | https://vitalis-back.vercel.app |
+| Frontend | https://vitalis-front-beta.vercel.app |
+| Database | Aiven MySQL (free plan, `defaultdb`, TLS required) |
+
+The dump is imported into Aiven and re-verified there with
+`npm run check:consistency` (all checks PASS). `/api/health` returns
+`{"status":"ok","db":"up"}`.
+
 1. Push this repository to GitHub (see below).
 2. In Vercel: **Add New → Project → Import** `VITALIS-Back`.
    Framework preset: **Other**. Root directory: `./`. No build command needed —
