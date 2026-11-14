@@ -1,0 +1,12 @@
+# Everything the Vercel function does not need at runtime.
+node_modules
+scripts
+database
+.env
+.env.local
+.env.*.local
+*.log
+.git
+.gitignore
+.vercel
+README.md

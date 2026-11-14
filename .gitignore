@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+
+# Environment: never commit real credentials
+.env
+.env.local
+.env.*.local
+!.env.example
+
+# Logs / OS / editor
+*.log
+npm-debug.log*
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Vercel / build artifacts
+.vercel/
+coverage/
+
+# The verified production dump lives in database/vitalis.sql and IS committed.
+# Keep temporary exports out of the repo.
+database/*.tmp
+database/*.bak
