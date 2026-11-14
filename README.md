@@ -119,6 +119,27 @@ sharing a deployment publicly.
    `DB_SSL=true`, `DB_POOL_SIZE=3`, `CLIENT_ORIGIN=https://<frontend-domain>`).
 4. Deploy, then check `https://<backend>.vercel.app/api/health`.
 
+**Live deployment:** <https://vitalis-back.vercel.app> · frontend
+<https://vitalis-front-beta.vercel.app>.
+
+### Changing the database credentials later
+
+The first deployment ships with placeholder values (`DB_HOST=CHANGE_ME...`), so
+`/api/health` returns `503 {"status":"degraded","db":"down"}` until you point it
+at a real database. Replace the four connection variables and redeploy — a
+serverless function only receives environment variables at deploy time:
+
+```bash
+vercel env add DB_HOST     --value <host>     --force -e production -e preview
+vercel env add DB_PORT     --value 3306       --force -e production -e preview
+vercel env add DB_USER     --value <user>     --force -e production -e preview
+vercel env add DB_PASSWORD --value <password> --force --type secret -e production -e preview
+vercel deploy --prod
+```
+
+Then import `database/vitalis.sql` into that database (section 3) so the demo
+accounts and telemetry exist.
+
 ### Notes for serverless
 
 - **Socket.IO is disabled on Vercel.** `app.js` exports the Express app only;
