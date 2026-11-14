@@ -1,16 +1,88 @@
 /**
- * Vercel entry point.
+ * Express application + Vercel entry point.
  *
- * Vercel detects an Express app exported from `app.js` (project root) and runs
- * it as a single serverless function. Local development keeps using
- * `src/server.js`, which also starts Socket.IO and listens on PORT.
- *
- * The factory itself lives in `src/create-app.js` on purpose: any file named
- * `app.js` under `src/` is also treated as a Vercel entry, and a named export
- * there would fail with "Invalid export found".
+ * Vercel detects an Express app that this root `app.js` imports directly and
+ * default-exports, then runs the whole app as one serverless function. Local
+ * development uses `src/server.js`, which adds the HTTP listener and Socket.IO.
  */
-import { createApp } from './src/create-app.js';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import cors from 'cors';
+import helmet from 'helmet';
+import { env } from './src/config/env.js';
+import { pingDatabase } from './src/db/pool.js';
+import { AppError, errorHandler, notFoundHandler } from './src/utils/errors.js';
+import authRoutes from './src/routes/auth.js';
+import adminRoutes from './src/routes/admin.js';
+import astronautRoutes from './src/routes/astronauts.js';
+import environmentRoutes from './src/routes/environment.js';
+import alertRoutes from './src/routes/alerts.js';
+import checkinRoutes from './src/routes/checkins.js';
+import noteRoutes from './src/routes/notes.js';
+import crewRoutes from './src/routes/crew.js';
+import reportRoutes from './src/routes/reports.js';
+import assistantRoutes from './src/routes/assistant.js';
 
+export function createApp() {
+  const app = express();
+
+  // Vercel terminates TLS at its edge; trust its forwarding headers so rate
+  // limiting sees the real client IP and secure cookies are detected.
+  if (env.TRUST_PROXY || env.IS_VERCEL) app.set('trust proxy', 1);
+
+  app.use(
+    helmet({
+      // The API only returns JSON; the client is served separately by Vite.
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+      contentSecurityPolicy: false,
+    }),
+  );
+
+  const allowedOrigins = env.CLIENT_ORIGIN.split(',').map((o) => o.trim()).filter(Boolean);
+  app.use(
+    cors({
+      origin(origin, callback) {
+        // Same-origin/tooling requests have no Origin header.
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        // Reject with a clear 403 instead of letting a generic error become a 500.
+        return callback(
+          new AppError(403, 'origin_not_allowed', 'This origin is not allowed to call the API'),
+        );
+      },
+      credentials: true,
+    }),
+  );
+
+  app.use(express.json({ limit: '1mb' }));
+  app.use(cookieParser());
+
+  app.get('/api/health', async (req, res) => {
+    try {
+      await pingDatabase();
+      res.json({ status: 'ok', db: 'up', timestamp: new Date().toISOString() });
+    } catch {
+      res.status(503).json({ status: 'degraded', db: 'down' });
+    }
+  });
+
+  app.use('/api/auth', authRoutes);
+  app.use('/api/admin', adminRoutes);
+  app.use('/api/astronauts', astronautRoutes);
+  app.use('/api/environment', environmentRoutes);
+  app.use('/api/alerts', alertRoutes);
+  app.use('/api/checkins', checkinRoutes);
+  app.use('/api/notes', noteRoutes);
+  app.use('/api/crew', crewRoutes);
+  app.use('/api/reports', reportRoutes);
+  app.use('/api/assistant', assistantRoutes);
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
+
+  return app;
+}
+
+// Vercel imports this module and runs the returned app as one function.
 const app = createApp();
 
 export default app;

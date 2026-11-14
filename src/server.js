@@ -1,16 +1,12 @@
 import http from 'node:http';
-import { createApp } from './create-app.js';
+import app from '../app.js';
 import { env } from './config/env.js';
 import { pingDatabase } from './db/pool.js';
 import { initSockets } from './sockets/index.js';
 
-const app = createApp();
-
-// Vercel imports the default export and runs it as one serverless function.
-// A long-lived HTTP server and Socket.IO cannot run on Vercel; in that
-// environment the client uses its polling fallback instead.
-export default app;
-
+// Vercel imports `app.js` directly and never runs this file. Locally we attach
+// the HTTP server and Socket.IO; serverless functions cannot hold a socket open,
+// so the deployed client uses its polling fallback instead.
 if (!env.IS_VERCEL) {
   const server = http.createServer(app);
   initSockets(server);
