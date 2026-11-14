@@ -10,6 +10,7 @@
     "seed": "node scripts/seed.js",
     "seed:live": "node scripts/seed-live.js",
     "check:consistency": "node scripts/check-consistency.js",
+    "import:dump": "node scripts/import-dump.js",
     "create-admin": "node scripts/create-admin.js"
   },
   "dependencies": {

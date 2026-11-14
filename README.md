@@ -30,6 +30,7 @@ The API refuses to start if it cannot reach the database.
 | `npm run seed`             | Seed demo users and the historical dataset            |
 | `npm run seed:live`        | Append fresh live telemetry rows                      |
 | `npm run check:consistency`| Verify alerts match the underlying readings           |
+| `npm run import:dump`      | Import `database/vitalis.sql` into any MySQL server   |
 | `npm run create-admin`     | Create an additional admin account                    |
 
 ---
@@ -94,6 +95,24 @@ Expected row counts after import:
 
 The dump was re-imported into a scratch schema and validated with
 `npm run check:consistency` (all checks pass), so it matches the live data.
+
+### Importing with the bundled script
+
+The MySQL CLI is not always available (and managed hosts often need TLS), so a
+portable importer is included. It reads `DATABASE_URL` (preferred) or the `DB_*`
+variables, accepts `?ssl-mode=required`, and splits the dump safely:
+
+```bash
+DATABASE_URL="mysql://user:pass@host:3306/dbname?ssl-mode=required" \
+  npm run import:dump
+
+# inspect without connecting
+npm run import:dump -- --dry-run
+```
+
+The dump is 216 statements (18 `CREATE TABLE` + 36 `INSERT`); the largest single
+statement is ~1 MiB, so it imports fine under the common 16 MiB
+`max_allowed_packet` default. A full import takes a few seconds.
 
 ### Demo accounts
 
